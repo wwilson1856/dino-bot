@@ -1,0 +1,258 @@
+{
+  "date": "2026-03-17",
+  "props": [
+    {
+      "player": "Viktor Arvidsson",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 290,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Nick Suzuki",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 180,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "David Pastrnak",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 135,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Morgan Geekie",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 230,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Elias Lindholm",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 330,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Pavel Zacha",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 340,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Juraj Slafkovsky",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 175,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Cole Caufield",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 135,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Nick Suzuki",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 114,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Charlie McAvoy",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -154,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Noah Dobson",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -178,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Juraj Slafkovsky",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 112,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Elias Lindholm",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -160,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Viktor Arvidsson",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 108,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "David Pastrnak",
+      "prop_type": "shots",
+      "line": 3.5,
+      "odds": -104,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Morgan Geekie",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -205,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Cole Caufield",
+      "prop_type": "shots",
+      "line": 3.5,
+      "odds": 106,
+      "home_team": "Montr\u00e9al Canadiens",
+      "away_team": "Boston Bruins",
+      "event_id": "31ff36b939589e06055491f1d8aec95a"
+    },
+    {
+      "player": "Adam Fantilli",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 230,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Mason Marchment",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 275,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Kirill Marchenko",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 200,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Kirill Marchenko",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 108,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Zach Werenski",
+      "prop_type": "shots",
+      "line": 3.5,
+      "odds": 130,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Adam Fantilli",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 120,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Mason Marchment",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -138,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Nikolaj Ehlers",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 108,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Sebastian Aho",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": -102,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Seth Jarvis",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": -128,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    },
+    {
+      "player": "Andrei Svechnikov",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 102,
+      "home_team": "Columbus Blue Jackets",
+      "away_team": "Carolina Hurricanes",
+      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+    }
+  ],
+  "timestamp": "2026-03-17T20:49:04.519151"
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "date": "2026-03-16",
+    "sport": "NHL",
+    "home": "Dallas Stars",
+    "away": "Utah Mammoth",
+    "bet": "Over 5.5",
+    "market": "totals",
+    "odds": -125,
+    "units": 0.62,
+    "point": 5.5,
+    "result": "win",
+    "profit": 0.5
+  },
+  {
+    "date": "2026-03-17",
+    "sport": "NHL",
+    "home": "Montreal Canadiens",
+    "away": "Boston Bruins",
+    "bet": "Over 6.5",
+    "market": "totals",
+    "odds": 102,
+    "units": 0.74,
+    "point": 6.5,
+    "result": null,
+    "profit": null,
+    "model_prob": 0.758,
+    "edge": 0.263
+  }
+]

@@ -1,258 +1,186 @@
 {
-  "date": "2026-03-17",
+  "date": "2026-03-18",
   "props": [
     {
-      "player": "Viktor Arvidsson",
-      "prop_type": "goals",
-      "line": 0.5,
-      "odds": 290,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Nick Suzuki",
-      "prop_type": "goals",
-      "line": 0.5,
-      "odds": 180,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "David Pastrnak",
-      "prop_type": "goals",
-      "line": 0.5,
-      "odds": 135,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Morgan Geekie",
+      "player": "Alexis Lafreni\u00e8re",
       "prop_type": "goals",
       "line": 0.5,
       "odds": 230,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
     },
     {
-      "player": "Elias Lindholm",
+      "player": "Jesper Bratt",
       "prop_type": "goals",
       "line": 0.5,
-      "odds": 330,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
+      "odds": 320,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
     },
     {
-      "player": "Pavel Zacha",
-      "prop_type": "goals",
-      "line": 0.5,
-      "odds": 340,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Juraj Slafkovsky",
-      "prop_type": "goals",
-      "line": 0.5,
-      "odds": 175,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Cole Caufield",
-      "prop_type": "goals",
-      "line": 0.5,
-      "odds": 135,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Nick Suzuki",
-      "prop_type": "shots",
-      "line": 2.5,
-      "odds": 114,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Charlie McAvoy",
-      "prop_type": "shots",
-      "line": 1.5,
-      "odds": -154,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Noah Dobson",
-      "prop_type": "shots",
-      "line": 1.5,
-      "odds": -178,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Juraj Slafkovsky",
-      "prop_type": "shots",
-      "line": 2.5,
-      "odds": 112,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Elias Lindholm",
-      "prop_type": "shots",
-      "line": 1.5,
-      "odds": -160,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Viktor Arvidsson",
-      "prop_type": "shots",
-      "line": 2.5,
-      "odds": 108,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "David Pastrnak",
-      "prop_type": "shots",
-      "line": 3.5,
-      "odds": -104,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Morgan Geekie",
-      "prop_type": "shots",
-      "line": 1.5,
-      "odds": -205,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Cole Caufield",
-      "prop_type": "shots",
-      "line": 3.5,
-      "odds": 106,
-      "home_team": "Montr\u00e9al Canadiens",
-      "away_team": "Boston Bruins",
-      "event_id": "31ff36b939589e06055491f1d8aec95a"
-    },
-    {
-      "player": "Adam Fantilli",
-      "prop_type": "goals",
-      "line": 0.5,
-      "odds": 230,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
-    },
-    {
-      "player": "Mason Marchment",
-      "prop_type": "goals",
-      "line": 0.5,
-      "odds": 275,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
-    },
-    {
-      "player": "Kirill Marchenko",
+      "player": "Nico Hischier",
       "prop_type": "goals",
       "line": 0.5,
       "odds": 200,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
     },
     {
-      "player": "Kirill Marchenko",
+      "player": "Timo Meier",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 235,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Vincent Trocheck",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 270,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "J.T. Miller",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 240,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Mika Zibanejad",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 180,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Jack Hughes",
+      "prop_type": "goals",
+      "line": 0.5,
+      "odds": 160,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Vincent Trocheck",
       "prop_type": "shots",
-      "line": 2.5,
-      "odds": 108,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+      "line": 1.5,
+      "odds": -176,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
     },
     {
-      "player": "Zach Werenski",
+      "player": "Jesper Bratt",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -192,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Timo Meier",
       "prop_type": "shots",
       "line": 3.5,
-      "odds": 130,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+      "odds": 118,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
     },
     {
-      "player": "Adam Fantilli",
+      "player": "Dougie Hamilton",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": -148,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Alexis Lafreni\u00e8re",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -198,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Luke Hughes",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 130,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Nico Hischier",
+      "prop_type": "shots",
+      "line": 2.5,
+      "odds": 114,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Jack Hughes",
+      "prop_type": "shots",
+      "line": 3.5,
+      "odds": 108,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Will Cuylle",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -128,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "J.T. Miller",
+      "prop_type": "shots",
+      "line": 1.5,
+      "odds": -196,
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
+    },
+    {
+      "player": "Mika Zibanejad",
       "prop_type": "shots",
       "line": 2.5,
       "odds": 120,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
     },
     {
-      "player": "Mason Marchment",
+      "player": "Adam Fox",
       "prop_type": "shots",
       "line": 1.5,
       "odds": -138,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
-    },
-    {
-      "player": "Nikolaj Ehlers",
-      "prop_type": "shots",
-      "line": 2.5,
-      "odds": 108,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
-    },
-    {
-      "player": "Sebastian Aho",
-      "prop_type": "shots",
-      "line": 2.5,
-      "odds": -102,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
-    },
-    {
-      "player": "Seth Jarvis",
-      "prop_type": "shots",
-      "line": 2.5,
-      "odds": -128,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
-    },
-    {
-      "player": "Andrei Svechnikov",
-      "prop_type": "shots",
-      "line": 2.5,
-      "odds": 102,
-      "home_team": "Columbus Blue Jackets",
-      "away_team": "Carolina Hurricanes",
-      "event_id": "67ba228ae7a60bbab128fd6274fe262c"
+      "home_team": "New York Rangers",
+      "away_team": "New Jersey Devils",
+      "event_id": "c781e17c9b7e43ff86ca0cdcda2fd20c"
     }
   ],
-  "timestamp": "2026-03-17T20:49:04.519151"
+  "timestamp": "2026-03-18T01:46:15.461577"
 }

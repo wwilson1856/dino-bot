@@ -22,8 +22,8 @@
     "odds": 102,
     "units": 0.74,
     "point": 6.5,
-    "result": null,
-    "profit": null,
+    "result": "loss",
+    "profit": -0.74,
     "model_prob": 0.758,
     "edge": 0.263
   }

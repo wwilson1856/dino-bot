@@ -6,9 +6,11 @@ from edge import american_to_implied, expected_value
 from config import MIN_EDGE
 
 
-def analyze_props(event_data: dict) -> list[dict]:
+def _parse_props(event_data: dict, min_edge: float = 0.0) -> list[dict]:
     """
-    Takes a single event's prop data and returns value bets.
+    Core prop parsing logic. For each player, picks the better side (higher fair prob).
+    Edge = fair_prob - implied_prob (negative due to vig, but best side is least negative).
+    min_edge=0.0 returns all props; use MIN_EDGE for filtered results.
     """
     sport = event_data.get("_sport_name", "?")
     home = event_data.get("home_team", "Home")
@@ -49,36 +51,84 @@ def analyze_props(event_data: dict) -> list[dict]:
             over_implied = american_to_implied(over_price)
             under_implied = american_to_implied(under_price)
             total = over_implied + under_implied
+            if total == 0:
+                continue
 
             fair_over = over_implied / total
             fair_under = under_implied / total
 
-            # Edge = fair prob - line implied prob
+            # Edge = fair_prob - implied_prob (will be negative due to vig)
+            # Best side = least negative edge = highest fair_prob
             over_edge = fair_over - over_implied
             under_edge = fair_under - under_implied
 
-            for side, fair_prob, price, edge in [
-                ("Over", fair_over, over_price, over_edge),
-                ("Under", fair_under, under_price, under_edge),
-            ]:
-                if edge >= MIN_EDGE:
-                    prop_label = market_key.replace("player_", "").replace("batter_", "").replace("pitcher_", "").replace("_", " ").title()
-                    candidates.append({
-                        "sport": sport,
-                        "home": home,
-                        "away": away,
-                        "player": player,
-                        "bet": f"{player} {side} {line} {prop_label}",
-                        "market": market_key,
-                        "odds": price,
-                        "model_prob": round(fair_prob, 4),
-                        "implied_prob": round(american_to_implied(price), 4),
-                        "edge": round(edge, 4),
-                        "ev": expected_value(fair_prob, price),
-                        "game_mode": "live",
-                        "time_label": "LIVE",
-                        "best_book": "FanDuel",
-                        "is_prop": True,
-                    })
+            prop_label = (
+                market_key
+                .replace("player_", "")
+                .replace("batter_", "")
+                .replace("pitcher_", "")
+                .replace("_", " ")
+                .title()
+            )
 
+            # In no-filter mode (min_edge=0), return the best side of each player
+            if min_edge == 0.0:
+                # Pick the better side (higher fair prob = less vig disadvantage)
+                if fair_over >= fair_under:
+                    side, fair_prob, price, edge = "Over", fair_over, over_price, over_edge
+                else:
+                    side, fair_prob, price, edge = "Under", fair_under, under_price, under_edge
+                candidates.append({
+                    "sport": sport,
+                    "home": home,
+                    "away": away,
+                    "player": player,
+                    "bet": f"{player} {side} {line} {prop_label}",
+                    "market": market_key,
+                    "odds": price,
+                    "model_prob": round(fair_prob, 4),
+                    "implied_prob": round(american_to_implied(price), 4),
+                    "edge": round(edge, 4),
+                    "ev": expected_value(fair_prob, price),
+                    "game_mode": "live",
+                    "time_label": "LIVE",
+                    "best_book": "FanDuel",
+                    "is_prop": True,
+                })
+            else:
+                # Filtered mode: only return sides with genuine positive edge
+                for side, fair_prob, price, edge in [
+                    ("Over", fair_over, over_price, over_edge),
+                    ("Under", fair_under, under_price, under_edge),
+                ]:
+                    if edge >= min_edge:
+                        candidates.append({
+                            "sport": sport,
+                            "home": home,
+                            "away": away,
+                            "player": player,
+                            "bet": f"{player} {side} {line} {prop_label}",
+                            "market": market_key,
+                            "odds": price,
+                            "model_prob": round(fair_prob, 4),
+                            "implied_prob": round(american_to_implied(price), 4),
+                            "edge": round(edge, 4),
+                            "ev": expected_value(fair_prob, price),
+                            "game_mode": "live",
+                            "time_label": "LIVE",
+                            "best_book": "FanDuel",
+                            "is_prop": True,
+                        })
+
+    # Sort by edge descending (least negative = best value)
     return sorted(candidates, key=lambda x: x["edge"], reverse=True)
+
+
+def analyze_props(event_data: dict) -> list[dict]:
+    """Returns value props filtered by MIN_EDGE threshold."""
+    return _parse_props(event_data, min_edge=MIN_EDGE)
+
+
+def analyze_props_no_filter(event_data: dict) -> list[dict]:
+    """Returns ALL props ranked by edge — no minimum threshold. Use for !analyzegame."""
+    return _parse_props(event_data, min_edge=0.0)

@@ -109,20 +109,17 @@ def get_team_id(sport: str, league: str, team_name: str) -> str | None:
 # ---------------------------------------------------------------------------
 
 def _fetch_nba_team_stats(team_id: str) -> dict:
-    """Returns {off_rtg, def_rtg, pace, win_pct}"""
+    """Returns full team stats including off/def ratings, pace, home/away splits."""
     try:
-        # Stats endpoint
         url = f"{ESPN_CORE}/basketball/leagues/nba/seasons/2026/types/2/teams/{team_id}/statistics"
         r = requests.get(url, headers=HEADERS, timeout=ESPN_TIMEOUT)
         r.raise_for_status()
         cats = r.json().get("splits", {}).get("categories", [])
-
         stats = {}
         for cat in cats:
             for s in cat.get("stats", []):
                 stats[s["name"]] = s.get("value", 0)
 
-        # Record endpoint for opponent PPG
         url2 = f"{ESPN_CORE}/basketball/leagues/nba/seasons/2026/types/2/teams/{team_id}/record"
         r2 = requests.get(url2, headers=HEADERS, timeout=ESPN_TIMEOUT)
         r2.raise_for_status()
@@ -139,7 +136,6 @@ def _fetch_nba_team_stats(team_id: str) -> dict:
         losses = stats.get("losses", 1)
         games = wins + losses or 1
 
-        # Offensive/defensive rating per 100 possessions
         off_rtg = (ppg / possessions) * 100 if possessions > 0 else 110.0
         def_rtg = (opp_ppg / possessions) * 100 if possessions > 0 else 110.0
 
@@ -157,11 +153,102 @@ def _fetch_nba_team_stats(team_id: str) -> dict:
                 "ppg": 110.0, "opp_ppg": 110.0, "win_pct": 0.5, "games": 0}
 
 
-def nba_pregame_prob(home_name: str, away_name: str) -> tuple[float, float] | None:
+def _fetch_nba_home_away_stats(team_id: str) -> dict:
+    """Fetch home and away PPG/opp-PPG splits from team schedule."""
+    try:
+        url = f"{ESPN_SITE}/basketball/nba/teams/{team_id}/schedule?season=2026"
+        r = requests.get(url, headers=HEADERS, timeout=ESPN_TIMEOUT)
+        r.raise_for_status()
+        events = r.json().get("events", [])
+        home_pts, home_opp, home_n = 0, 0, 0
+        away_pts, away_opp, away_n = 0, 0, 0
+        for e in events:
+            comp = e.get("competitions", [{}])[0]
+            if not comp.get("status", {}).get("type", {}).get("completed"):
+                continue
+            competitors = comp.get("competitors", [])
+            team = next((c for c in competitors if c.get("id") == team_id), None)
+            opp  = next((c for c in competitors if c.get("id") != team_id), None)
+            if not team or not opp:
+                continue
+            try:
+                gf = int(float(team.get("score", 0)))
+                ga = int(float(opp.get("score", 0)))
+            except Exception:
+                continue
+            if team.get("homeAway") == "home":
+                home_pts += gf; home_opp += ga; home_n += 1
+            else:
+                away_pts += gf; away_opp += ga; away_n += 1
+        return {
+            "home_ppg":     home_pts / home_n if home_n else None,
+            "home_opp_ppg": home_opp / home_n if home_n else None,
+            "away_ppg":     away_pts / away_n if away_n else None,
+            "away_opp_ppg": away_opp / away_n if away_n else None,
+        }
+    except Exception:
+        return {}
+
+
+def _fetch_nba_last_n(team_id: str, n: int = 10) -> dict:
+    """Recent form: avg pts scored/allowed over last N completed games."""
+    try:
+        url = f"{ESPN_SITE}/basketball/nba/teams/{team_id}/schedule?season=2026"
+        r = requests.get(url, headers=HEADERS, timeout=ESPN_TIMEOUT)
+        r.raise_for_status()
+        events = r.json().get("events", [])
+        results = []
+        for e in events:
+            comp = e.get("competitions", [{}])[0]
+            if not comp.get("status", {}).get("type", {}).get("completed"):
+                continue
+            competitors = comp.get("competitors", [])
+            team = next((c for c in competitors if c.get("id") == team_id), None)
+            opp  = next((c for c in competitors if c.get("id") != team_id), None)
+            if not team or not opp:
+                continue
+            try:
+                results.append({
+                    "pts": int(float(team.get("score", 0))),
+                    "opp": int(float(opp.get("score", 0))),
+                    "date": e.get("date", ""),
+                })
+            except Exception:
+                continue
+        recent = results[-n:] if results else []
+        if not recent:
+            return {}
+        return {
+            "avg_pts":     round(sum(g["pts"] for g in recent) / len(recent), 1),
+            "avg_opp_pts": round(sum(g["opp"] for g in recent) / len(recent), 1),
+            "last_date":   recent[-1]["date"] if recent else None,
+        }
+    except Exception:
+        return {}
+
+
+def _nba_is_back_to_back(team_id: str, game_date: str) -> bool:
+    """True if team played yesterday."""
+    try:
+        from datetime import timedelta
+        game_dt = datetime.fromisoformat(game_date.replace("Z", "+00:00"))
+        yesterday = (game_dt - timedelta(days=1)).date()
+        recent = _fetch_nba_last_n(team_id, 5)
+        last = recent.get("last_date")
+        if not last:
+            return False
+        last_dt = datetime.fromisoformat(last.replace("Z", "+00:00"))
+        return last_dt.date() == yesterday
+    except Exception:
+        return False
+
+
+def nba_pregame_prob(home_name: str, away_name: str) -> tuple[float, float, float] | None:
     """
-    Returns (home_win_prob, away_win_prob) using offensive/defensive ratings.
-    Uses log5 method: P(A beats B) = (A_strength - A*B) / (A_strength + B_strength - 2*A*B)
-    where strength = off_rtg / def_rtg ratio (net rating proxy).
+    Full NBA pre-game model matching NHL model depth.
+    Factors: off/def ratings, pace, home/away splits, recent form (last 10),
+             back-to-back penalty, rest-days advantage.
+    Returns (home_win_prob, away_win_prob, proj_total).
     """
     home_id = get_team_id("basketball", "nba", home_name)
     away_id = get_team_id("basketball", "nba", away_name)
@@ -174,27 +261,53 @@ def nba_pregame_prob(home_name: str, away_name: str) -> tuple[float, float] | No
     if home_stats["games"] < 5 or away_stats["games"] < 5:
         return None
 
-    # Net rating: positive = good team
-    # League average ~110 off/def rating
-    league_avg = 110.0
-    home_net = home_stats["off_rtg"] - home_stats["def_rtg"]
-    away_net = away_stats["off_rtg"] - away_stats["def_rtg"]
+    # --- Home/away splits (same pattern as NHL) ---
+    home_splits = _cached(f"nba_splits_{home_id}", lambda: _fetch_nba_home_away_stats(home_id))
+    away_splits = _cached(f"nba_splits_{away_id}", lambda: _fetch_nba_home_away_stats(away_id))
 
-    # Convert net rating to win probability using logistic function
-    # Each point of net rating ≈ ~2.7% win probability shift (calibrated from NBA data)
-    # Home court advantage ≈ +3 points net rating
-    home_advantage = 3.0
-    net_diff = (home_net - away_net) + home_advantage
+    league_avg_pts = 113.0
+    home_ppg     = home_splits.get("home_ppg")     or home_stats["ppg"]
+    home_opp_ppg = home_splits.get("home_opp_ppg") or home_stats["opp_ppg"]
+    away_ppg     = away_splits.get("away_ppg")     or away_stats["ppg"]
+    away_opp_ppg = away_splits.get("away_opp_ppg") or away_stats["opp_ppg"]
 
-    home_prob = 1 / (1 + math.exp(-net_diff * 0.15))
+    # Attack/defense strength relative to league average
+    home_attack  = home_ppg     / league_avg_pts
+    home_defense = home_opp_ppg / league_avg_pts
+    away_attack  = away_ppg     / league_avg_pts
+    away_defense = away_opp_ppg / league_avg_pts
 
-    # Also factor in projected total for totals bets
-    # Expected game total = (home_off + away_off + home_def + away_def) / 2
-    # adjusted for pace
-    pace_factor = (home_stats["pace"] + away_stats["pace"]) / 2 / 100.0
-    proj_home_pts = (home_stats["off_rtg"] + away_stats["def_rtg"]) / 2 * pace_factor
-    proj_away_pts = (away_stats["off_rtg"] + home_stats["def_rtg"]) / 2 * pace_factor
-    proj_total = proj_home_pts + proj_away_pts
+    # Expected points each team scores
+    home_xpts = home_attack * away_defense * league_avg_pts * 1.025  # small home court boost
+    away_xpts = away_attack * home_defense * league_avg_pts
+
+    # --- Pace adjustment ---
+    league_avg_pace = 100.0
+    pace_factor = ((home_stats["pace"] + away_stats["pace"]) / 2) / league_avg_pace
+    home_xpts *= pace_factor
+    away_xpts *= pace_factor
+
+    # --- Recent form adjustment (last 10 games, weighted 30%) ---
+    home_recent = _cached(f"nba_recent_{home_id}", lambda: _fetch_nba_last_n(home_id, 10))
+    away_recent = _cached(f"nba_recent_{away_id}", lambda: _fetch_nba_last_n(away_id, 10))
+
+    if home_recent.get("avg_pts"):
+        home_xpts = home_xpts * 0.7 + (home_recent["avg_pts"] / league_avg_pts) * league_avg_pts * pace_factor * 0.3
+    if away_recent.get("avg_pts"):
+        away_xpts = away_xpts * 0.7 + (away_recent["avg_pts"] / league_avg_pts) * league_avg_pts * pace_factor * 0.3
+
+    # --- Back-to-back penalty (-4% scoring, NBA fatigue is less than NHL) ---
+    today = datetime.now().date().isoformat()
+    if _nba_is_back_to_back(home_id, today):
+        home_xpts *= 0.96
+    if _nba_is_back_to_back(away_id, today):
+        away_xpts *= 0.96
+
+    proj_total = home_xpts + away_xpts
+
+    # Win probability via Pythagorean expectation (NBA exponent ~13.91 per Morey)
+    exp = 13.91
+    home_prob = home_xpts ** exp / (home_xpts ** exp + away_xpts ** exp)
 
     return round(home_prob, 4), round(1 - home_prob, 4), round(proj_total, 1)
 

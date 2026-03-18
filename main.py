@@ -82,11 +82,20 @@ def run():
             # Send Discord card once per day with today's top picks
             today = now.date()
             if last_discord_date != today:
-                today_picks = sorted(
-                    [r for r in recommendations if r["game_mode"] in ("live", "upcoming") and r["odds"] >= -150],
-                    key=lambda x: x["confidence"],
-                    reverse=True,
-                )
+                qualifying = [
+                    r for r in recommendations
+                    if r["game_mode"] in ("live", "upcoming") and r["odds"] >= -150
+                ]
+
+                # Take the best pick per sport to enforce diversity, then re-rank
+                best_by_sport = {}
+                for r in sorted(qualifying, key=lambda x: x["confidence"], reverse=True):
+                    sport_key = r["sport"]
+                    if sport_key not in best_by_sport:
+                        best_by_sport[sport_key] = r
+
+                today_picks = sorted(best_by_sport.values(), key=lambda x: x["confidence"], reverse=True)
+
                 if today_picks:
                     top = today_picks[0]
                     if random.random() < 0.25:

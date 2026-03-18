@@ -87,7 +87,7 @@ def get_calibration() -> dict:
 
 def get_model_weight(market: str) -> float:
     """Return the calibrated model blend weight for a market. Defaults to base if insufficient data."""
-    defaults = {"totals": 0.6, "h2h": 0.6, "spreads": 0.35}
+    defaults = {"totals": 0.45, "h2h": 0.40, "spreads": 0.55}
     cal = get_calibration().get(market, {})
     return cal.get("model_weight") or defaults.get(market, 0.6)
 

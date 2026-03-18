@@ -25,7 +25,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     print(f'✓ Bot connected as {bot.user}')
     print(f'  Servers: {len(bot.guilds)}')
-    print(f'  Commands: !pick, !analyze, !game, !mlb, !mlbprops, !props, !baddino, !record, !stats, !recent, !health, !kalshi, !teamstats, !profit, !commands')
+    print(f'  Commands: !pick, !analyze, !analyzegame, !game, !mlb, !mlbprops, !props, !baddino, !record, !stats, !recent, !health, !kalshi, !teamstats, !profit, !commands')
 
 @bot.command(name='pick')
 async def get_pick(ctx):
@@ -272,17 +272,251 @@ async def analyze_game_cmd(ctx, *, teams):
     except Exception as e:
         await ctx.send(f"❌ Error analyzing game: {str(e)}")
 
+@bot.command(name='analyzegame')
+async def analyze_game_full(ctx, *, teams):
+    """Top 3 picks for a specific game including player props. Usage: !analyzegame Boston Celtics"""
+    import asyncio
+    import threading
+
+    msg = await ctx.send(f"🔄 Analyzing game... (please allow 1-2 minutes)")
+
+    def run():
+        from action_scraper import scrape_all_sports
+        from team_analyzer import analyze_team_markets_only
+        import models.stats as stats_mod
+        stats_mod.ESPN_TIMEOUT = 5
+
+        search_terms = [p.lower() for p in teams.strip().split()]
+        all_games, all_props = scrape_all_sports()
+        now = datetime.now(timezone.utc)
+
+        # Find matching game
+        target_game = None
+        target_sport = None
+        for sport, games in all_games.items():
+            for game in games:
+                home = game.get("home_team", "").lower()
+                away = game.get("away_team", "").lower()
+                if any(t in home or t in away for t in search_terms):
+                    target_game = game
+                    target_sport = sport
+                    break
+            if target_game:
+                break
+
+        if not target_game:
+            return None, None, None, teams
+
+        tag_game_mode(target_game, target_sport, now)
+
+        home_n = target_game.get("home_team", "")
+        away_n = target_game.get("away_team", "")
+
+        # Warm stat cache
+        from models.stats import get_pregame_prob
+        get_pregame_prob(target_sport, home_n, away_n)
+
+        # Team picks — pass min_edge=0 to always return results ranked by edge
+        team_picks = analyze_team_markets_only(target_sport, target_game, min_edge=0)
+        team_picks = sorted(team_picks, key=lambda x: x["edge"], reverse=True)
+
+        # Player prop picks
+        prop_picks = []
+        try:
+            from oddsapi_props import get_nhl_props_smart
+            from nhl_props import analyze_nhl_player_prop_simple
+
+            if target_sport == "NHL":
+                all_nhl_props = get_nhl_props_smart()
+                game_props = [
+                    p for p in all_nhl_props
+                    if (p["home_team"].replace("é","e") == home_n.replace("é","e") and
+                        p["away_team"].replace("é","e") == away_n.replace("é","e")) or
+                       (p["home_team"].replace("é","e") == away_n.replace("é","e") and
+                        p["away_team"].replace("é","e") == home_n.replace("é","e"))
+                ]
+                for prop in game_props:
+                    best = None
+                    for team, opp in [(home_n, away_n), (away_n, home_n)]:
+                        try:
+                            a = analyze_nhl_player_prop_simple(
+                                prop["player"], team, prop["prop_type"], prop["line"], prop["odds"], opp
+                            )
+                            if a and a.get("edge", 0) > (best.get("edge", 0) if best else -999):
+                                best = a
+                        except Exception:
+                            continue
+                    if best:
+                        confidence = min(95, max(50, int(best["edge"] * 300 + 60)))
+                        prop_picks.append({
+                            "player": prop["player"],
+                            "bet": f"{prop['player']} {prop['prop_type'].title()} Over {prop['line']}",
+                            "odds": prop["odds"],
+                            "edge": best["edge"],
+                            "confidence": confidence,
+                            "projection": best.get("projection", ""),
+                            "units": round(min(1.5, best["edge"] * 6), 2),
+                        })
+            else:
+                # NBA/MLB — fetch props from OddsAPI event-odds endpoint
+                try:
+                    from config import API_KEY, BASE_URL, PROP_MARKETS
+                    import requests as _req
+                    sport_key = {"NBA": "basketball_nba", "MLB": "baseball_mlb"}.get(target_sport)
+                    if sport_key:
+                        # Get events list to find event ID
+                        r = _req.get(
+                            f"{BASE_URL}/sports/{sport_key}/events",
+                            params={"apiKey": API_KEY},
+                            timeout=10
+                        )
+                        if r.status_code == 200:
+                            events = r.json()
+                            # Match event to our game — try partial name match
+                            event_id = None
+                            for ev in events:
+                                eh = ev.get("home_team", "").lower()
+                                ea = ev.get("away_team", "").lower()
+                                # Match if any search term appears in either team name
+                                if any(t in eh or t in ea for t in search_terms):
+                                    event_id = ev.get("id")
+                                    break
+                            if event_id:
+                                markets = ",".join(PROP_MARKETS.get(target_sport, [])[:5])
+                                pr = _req.get(
+                                    f"{BASE_URL}/sports/{sport_key}/events/{event_id}/odds",
+                                    params={"apiKey": API_KEY, "regions": "us",
+                                            "markets": markets, "bookmakers": "fanduel",
+                                            "oddsFormat": "american"},
+                                    timeout=10
+                                )
+                                if pr.status_code == 200:
+                                    from props_analyzer import analyze_props_no_filter as _ap
+                                    event_data = pr.json()
+                                    event_data["_sport_name"] = target_sport
+                                    raw = _ap(event_data)
+                                    # Add confidence + units fields expected by display code
+                                    for p in raw:
+                                        p.setdefault("confidence", min(95, max(50, int(p["edge"] * 700 + 50))))
+                                        p.setdefault("units", round(min(1.5, p["edge"] * 6), 2))
+                                        p.setdefault("projection", "")
+                                    prop_picks.extend(raw)
+                except Exception as _e:
+                    print(f"[analyzegame] {target_sport} props error: {_e}")
+
+            prop_picks = sorted(prop_picks, key=lambda x: x.get("edge", 0), reverse=True)
+        except Exception:
+            prop_picks = []
+
+        return target_game, target_sport, team_picks, prop_picks
+
+    try:
+        loop = asyncio.get_event_loop()
+        result = await asyncio.wait_for(loop.run_in_executor(None, run), timeout=120.0)
+    except asyncio.TimeoutError:
+        await msg.edit(content="⏱️ Analysis timed out. Try again in a minute.")
+        return
+    except Exception as e:
+        await msg.edit(content=f"❌ Error: {str(e)}")
+        return
+
+    game, sport, team_picks, prop_picks = result
+
+    if game is None:
+        await msg.edit(content=f"❌ No game found matching: **{teams}**")
+        return
+
+    home = game.get("home_team")
+    away = game.get("away_team")
+
+    # Build top 3: slot 1 = best team pick, slot 2 = best prop, slot 3 = next best of either
+    best_team = team_picks[0] if team_picks else None
+    best_prop = prop_picks[0] if prop_picks else None
+
+    used = set()
+    all_picks = []
+
+    # Slot 1: best team market pick
+    if best_team:
+        all_picks.append(("team", best_team))
+        used.add(id(best_team))
+
+    # Slot 2: best player prop (guaranteed if available)
+    if best_prop:
+        all_picks.append(("prop", best_prop))
+        used.add(id(best_prop))
+
+    # Slot 3: next best from either pool
+    remaining = []
+    for p in team_picks[1:]:
+        if id(p) not in used:
+            remaining.append(("team", p))
+    for p in prop_picks[1:]:
+        if id(p) not in used:
+            remaining.append(("prop", p))
+    remaining.sort(key=lambda item: item[1].get("confidence", 0), reverse=True)
+
+    all_picks = (all_picks + remaining)[:3]
+
+    await msg.delete()
+
+    if not all_picks:
+        await ctx.send(f"📊 **{away} @ {home}**\n❌ No picks available for this game.")
+        return
+
+    sport_emoji = {"NHL": "🏒", "NBA": "🏀", "MLB": "⚾", "NFL": "🏈"}.get(sport, "🎯")
+    embed = discord.Embed(
+        title=f"{sport_emoji} {away} @ {home} — Top Picks",
+        color=0x00ff00
+    )
+
+    for i, (kind, pick) in enumerate(all_picks, 1):
+        if kind == "team":
+            name = f"{i}. {pick['bet']} ({pick['odds']:+d})"
+            value = f"Edge: {pick['edge']:.1%} | Conf: {pick['confidence']}% | {pick['units']:.2f}u | {pick.get('time_label', '')}"
+        else:
+            proj = f" | Proj: {pick['projection']}" if pick.get('projection') else ""
+            name = f"{i}. 👤 {pick['bet']} ({pick['odds']:+d})"
+            value = f"Edge: {pick['edge']:.1%} | Conf: {pick['confidence']}%{proj}"
+        embed.add_field(name=name, value=value, inline=False)
+
+    await ctx.send(embed=embed)
+
 @bot.command(name='analyze')
 async def analyze_now(ctx):
     """Run live analysis for TEAM MARKETS only (h2h, totals, spreads)"""
     import asyncio
+    import threading
     from action_scraper import scrape_all_sports
 
-    msg = await ctx.send("🔄 Running team market analysis... (~30 seconds)")
+    msg = await ctx.send("🔄 Running team market analysis... (please allow 1-2 minutes)")
 
     def run_analysis():
         all_games, _ = scrape_all_sports()
         now = datetime.now(timezone.utc)
+
+        # Pre-warm stat cache in parallel (same as main.py) with short timeout
+        from models.stats import get_pregame_prob
+        import models.stats as stats_mod
+        stats_mod.ESPN_TIMEOUT = 5  # tight per-call timeout
+        threads = []
+        seen = set()
+        for sport, games in all_games.items():
+            for game in games:
+                key = f"{sport}:{game.get('home_team')}:{game.get('away_team')}"
+                if key not in seen:
+                    seen.add(key)
+                    t = threading.Thread(
+                        target=get_pregame_prob,
+                        args=(sport, game.get("home_team", ""), game.get("away_team", "")),
+                        daemon=True,
+                    )
+                    threads.append(t)
+                    t.start()
+        deadline = __import__("time").time() + 20
+        for t in threads:
+            t.join(timeout=max(0, deadline - __import__("time").time()))
+
         recommendations = []
         for sport, games in all_games.items():
             for game in games:
@@ -295,7 +529,7 @@ async def analyze_now(ctx):
     try:
         loop = asyncio.get_event_loop()
         recommendations = await asyncio.wait_for(
-            loop.run_in_executor(None, run_analysis), timeout=90.0
+            loop.run_in_executor(None, run_analysis), timeout=120.0
         )
     except asyncio.TimeoutError:
         await msg.edit(content="⏱️ Analysis timed out. Try again in a minute.")
@@ -309,7 +543,7 @@ async def analyze_now(ctx):
         key=lambda x: x["confidence"],
         reverse=True,
     )
-    
+
     # Exclude today's Pick of the Day
     from datetime import date
     today = date.today().isoformat()
@@ -319,15 +553,33 @@ async def analyze_now(ctx):
         todays_pick = next((p for p in picks if p["date"] == today), None)
         if todays_pick:
             top_picks = [p for p in top_picks if not (
-                p["home"] == todays_pick["home"] and 
+                p["home"] == todays_pick["home"] and
                 p["away"] == todays_pick["away"] and
                 p["bet"] == todays_pick["bet"] and
                 p.get("point") == todays_pick.get("point")
             )]
     except Exception:
         pass
-    
-    top_picks = top_picks[:3]
+
+    # Best pick per sport for diversity
+    best_by_sport = {}
+    for r in top_picks:
+        if r["sport"] not in best_by_sport:
+            best_by_sport[r["sport"]] = r
+    diverse = sorted(best_by_sport.values(), key=lambda x: x["confidence"], reverse=True)
+    used = {(p["home"], p["away"], p["bet"]) for p in diverse}
+
+    # Try to add a spread pick if none in diverse set
+    has_spread = any(p["market"] == "spreads" for p in diverse)
+    if not has_spread:
+        spread_pick = next((r for r in top_picks if r["market"] == "spreads" and (r["home"], r["away"], r["bet"]) not in used), None)
+        if spread_pick:
+            diverse.append(spread_pick)
+            used.add((spread_pick["home"], spread_pick["away"], spread_pick["bet"]))
+
+    # Fill remaining slots from any sport/market
+    extras = [r for r in top_picks if (r["home"], r["away"], r["bet"]) not in used]
+    top_picks = (diverse + extras)[:3]
 
     await msg.delete()
 
@@ -472,7 +724,7 @@ async def analyze_props(ctx):
     try:
         loop = asyncio.get_event_loop()
         recommendations = await asyncio.wait_for(
-            loop.run_in_executor(None, run_analysis), timeout=90.0
+            loop.run_in_executor(None, run_analysis), timeout=120.0
         )
     except asyncio.TimeoutError:
         await msg.edit(content="⏱️ Analysis timed out. Try again in a minute.")

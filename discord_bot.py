@@ -464,7 +464,7 @@ async def analyze_game_full(ctx, *, teams):
         await ctx.send(f"📊 **{away} @ {home}**\n❌ No picks available for this game.")
         return
 
-    sport_emoji = {"NHL": "🏒", "NBA": "🏀", "MLB": "⚾", "NFL": "🏈"}.get(sport, "🎯")
+    sport_emoji = {"NHL": "🏒", "NBA": "🏀", "MLB": "⚾", "NFL": "🏈", "NCAAB": "🏀"}.get(sport, "🎯")
     embed = discord.Embed(
         title=f"{sport_emoji} {away} @ {home} — Top Picks",
         color=0x00ff00
@@ -495,13 +495,15 @@ async def analyze_now(ctx):
         all_games, _ = scrape_all_sports()
         now = datetime.now(timezone.utc)
 
-        # Pre-warm stat cache in parallel (same as main.py) with short timeout
+        # Pre-warm stat cache in parallel — skip NCAAB (no ESPN stat data)
         from models.stats import get_pregame_prob
         import models.stats as stats_mod
-        stats_mod.ESPN_TIMEOUT = 5  # tight per-call timeout
+        stats_mod.ESPN_TIMEOUT = 4  # tight per-call timeout
         threads = []
         seen = set()
         for sport, games in all_games.items():
+            if sport == "NCAAB":
+                continue  # no stat model for college teams
             for game in games:
                 key = f"{sport}:{game.get('home_team')}:{game.get('away_team')}"
                 if key not in seen:
@@ -1067,6 +1069,55 @@ async def get_prop(ctx, player_name: str, *, stat: str = "total bases"):
     except Exception as e:
         await ctx.send(f"❌ Error: {str(e)}")
 
+@bot.command(name='ncaab')
+async def analyze_ncaab(ctx):
+    """March Madness top picks — spreads, totals, moneylines"""
+    import asyncio
+    from action_scraper import _fetch_ncaab_games
+    from team_analyzer import analyze_team_markets_only
+
+    msg = await ctx.send("🏀 Analyzing March Madness games... (please allow 1-2 minutes)")
+
+    def run():
+        from analyzer import tag_game_mode
+        games = _fetch_ncaab_games()
+        now = datetime.now(timezone.utc)
+        picks = []
+        for game in games:
+            tag_game_mode(game, "NCAAB", now)
+            if game.get("_game_mode") in ("upcoming", "live"):
+                # min_edge=0 — NCAAB uses pure line comparison, edges are smaller than stat-model sports
+                picks.extend(analyze_team_markets_only("NCAAB", game, min_edge=0))
+        # Filter to reasonable odds range (-160 to +180) — skip heavy favorites and longshots
+        picks = [p for p in picks if -160 <= p["odds"] <= 180]
+        return sorted(picks, key=lambda x: x["edge"], reverse=True)
+
+    try:
+        loop = asyncio.get_event_loop()
+        picks = await asyncio.wait_for(loop.run_in_executor(None, run), timeout=60.0)
+    except asyncio.TimeoutError:
+        await msg.edit(content="⏱️ Timed out. Try again.")
+        return
+    except Exception as e:
+        await msg.edit(content=f"❌ Error: {str(e)}")
+        return
+
+    await msg.delete()
+
+    if not picks:
+        await ctx.send("📭 No March Madness value picks right now.")
+        return
+
+    embed = discord.Embed(title="🏀 March Madness — Top Picks", color=0xff6600)
+    for i, pick in enumerate(picks[:6], 1):
+        embed.add_field(
+            name=f"{i}. {pick['away']} @ {pick['home']}",
+            value=f"**{pick['bet']}** ({pick['odds']:+d}) — {pick['units']:.2f}u\nEdge: {pick['edge']*100:.1f}% | Conf: {pick['confidence']}% | {pick['time_label']}",
+            inline=False
+        )
+    await ctx.send(embed=embed)
+
+
 @bot.command(name='dean')
 async def dean(ctx):
     await ctx.send("Deaner Beaner")
@@ -1080,6 +1131,7 @@ async def commands_list(ctx):
 **📊 Analysis & Picks:**
 `!pick` - Get today's official Pick of the Day (4PM automation)
 `!analyze` - Live team market analysis (h2h, totals, spreads)
+`!ncaab` - March Madness top picks
 `!props` - Live player props analysis (goals, assists, shots)
 
 **📈 Performance Tracking:**

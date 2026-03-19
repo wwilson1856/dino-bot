@@ -12,6 +12,7 @@ SPORTS = {
     "NHL": "icehockey_nhl",
     "MLB": "baseball_mlb",
     "NFL": "americanfootball_nfl",
+    "NCAAB": "basketball_ncaab",
 }
 
 # Only look at these game markets
@@ -73,6 +74,7 @@ GAME_DURATION_HOURS = {
     "MLB": 4.0,
     "WBC": 4.0,
     "MLB_PRE": 4.0,
+    "NCAAB": 2.5,
 }
 
 # Filter out any odds longer than this (e.g. -500 = skip heavy favorites)

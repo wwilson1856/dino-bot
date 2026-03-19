@@ -383,6 +383,34 @@ def _normalize_espn(event: dict, sport_name: str) -> dict | None:
     }
 
 
+def _fetch_ncaab_games() -> list[dict]:
+    """Fetch NCAAB (March Madness) games directly from OddsAPI."""
+    import requests as _req
+    from config import API_KEY, BASE_URL
+    try:
+        r = _req.get(
+            f"{BASE_URL}/sports/basketball_ncaab/odds",
+            params={"apiKey": API_KEY, "regions": "us", "markets": "h2h,spreads,totals",
+                    "bookmakers": "fanduel,draftkings,pinnacle", "oddsFormat": "american"},
+            timeout=10
+        )
+        if r.status_code != 200:
+            return []
+        games = []
+        for g in r.json():
+            games.append({
+                "home_team": g.get("home_team", ""),
+                "away_team": g.get("away_team", ""),
+                "commence_time": g.get("commence_time", ""),
+                "bookmakers": g.get("bookmakers", []),
+                "completed": False,
+            })
+        return games
+    except Exception as e:
+        print(f"NCAAB fetch error: {e}")
+        return []
+
+
 def scrape_all_sports() -> tuple[dict, dict]:
     """Returns (games_by_sport, props_by_sport). Uses Action Network for odds."""
     games_result = {}
@@ -398,5 +426,14 @@ def scrape_all_sports() -> tuple[dict, dict]:
             print(f"{len(active)} games")
         else:
             print("none")
+
+    # NCAAB — fetch directly from OddsAPI
+    print("[odds] NCAAB...", end=" ", flush=True)
+    ncaab_games = _fetch_ncaab_games()
+    if ncaab_games:
+        games_result["NCAAB"] = ncaab_games
+        print(f"{len(ncaab_games)} games")
+    else:
+        print("none")
 
     return games_result, {}

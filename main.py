@@ -23,6 +23,8 @@ def _warm_stat_cache(games_by_sport: dict):
     threads = []
     seen = set()
     for sport, games in games_by_sport.items():
+        if sport == "NCAAB":
+            continue  # no stat model for college teams
         for game in games:
             key = f"{sport}:{game.get('home_team')}:{game.get('away_team')}"
             if key not in seen:

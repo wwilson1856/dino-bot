@@ -327,52 +327,5 @@ def calculate_consensus_odds(bookmakers: list) -> dict:
     return consensus
 
 def _analyze_kalshi_markets(sport: str, game: dict) -> list[dict]:
-    """Analyze Kalshi prediction markets for arbitrage opportunities."""
-    try:
-        from kalshi_api import compare_kalshi_to_model
-        from config import MIN_EDGE
-        
-        candidates = []
-        home = game.get("home_team", "")
-        away = game.get("away_team", "")
-        
-        # Compare Kalshi markets to our model
-        comparison = compare_kalshi_to_model(sport, home, away)
-        
-        for comp in comparison.get("comparisons", []):
-            edge = comp.get("edge", 0)
-            if abs(edge) > MIN_EDGE:
-                # Convert to standard recommendation format
-                confidence = min(95, max(50, int(abs(edge) * 400 + 60)))
-                units = min(1.0, abs(edge) * 5)  # Conservative sizing for prediction markets
-                
-                bet_description = f"Kalshi: {comp['market']}"
-                if edge > 0:
-                    bet_description += " (BUY YES)"
-                else:
-                    bet_description += " (BUY NO)"
-                
-                candidates.append({
-                    "sport": sport,
-                    "home": home,
-                    "away": away,
-                    "bet": bet_description,
-                    "market": "kalshi_prediction",
-                    "odds": int((comp["kalshi_prob"] / (1 - comp["kalshi_prob"])) * 100),  # Convert to American odds
-                    "edge": abs(edge),
-                    "confidence": confidence,
-                    "units": round(units, 2),
-                    "game_mode": game.get("_game_mode", "upcoming"),
-                    "time_label": "",
-                    "commence_time": game.get("commence_time", ""),
-                    "kalshi_ticker": comp["ticker"],
-                    "kalshi_prob": comp["kalshi_prob"],
-                    "model_prob": comp["model_prob"],
-                })
-        
-        return candidates
-    
-    except Exception as e:
-        # Kalshi integration is optional - don't break main analysis if it fails
-        print(f"Kalshi analysis error: {e}")
-        return []
+    """Analyze Kalshi prediction markets — disabled when rate-limited."""
+    return []

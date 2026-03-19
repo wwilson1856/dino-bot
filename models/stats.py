@@ -597,17 +597,26 @@ def get_pregame_prob(sport: str, home_name: str, away_name: str) -> tuple | None
     """
     Returns (home_prob, away_prob, proj_total) or None if stats unavailable.
     proj_total is the model's projected game total (points/goals/runs).
+    Result is cached at this level so analyze_game never re-runs the full model.
     """
+    cache_key = f"pregame_{sport}_{home_name}_{away_name}"
+    if cache_key in _cache_data:
+        return _cache_data[cache_key]
     try:
         if sport == "NBA":
-            return nba_pregame_prob(home_name, away_name)
+            result = nba_pregame_prob(home_name, away_name)
         elif sport == "NHL":
-            return nhl_pregame_prob(home_name, away_name)
+            result = nhl_pregame_prob(home_name, away_name)
         elif sport == "MLB":
-            return mlb_pregame_prob(home_name, away_name)
+            result = mlb_pregame_prob(home_name, away_name)
+        else:
+            result = None
     except Exception:
-        pass
-    return None
+        result = None
+    if result is not None:
+        _cache_data[cache_key] = result
+        _cache_time[cache_key] = datetime.now().timestamp()
+    return result
 
 
 # ---------------------------------------------------------------------------

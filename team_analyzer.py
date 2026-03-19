@@ -112,8 +112,49 @@ def analyze_team_markets_only(sport: str, game: dict, min_edge: float = 0.025) -
 
                 model_prob = _get_pregame_model_prob(sport, game, team, market_key, line_point)
 
-            if model_prob is None:
-                continue
+            # For sports with no stat model (NCAAB), use sharp vig-removed prob directly
+            # Skip blending — sharp line IS the model, compare directly vs FanDuel
+            if model_prob is None and pin_fair:
+                sharp_prob = pin_fair.get(team)
+                if sharp_prob is None:
+                    continue
+                fd_implied = american_to_implied(fd_price)
+                edge = sharp_prob - fd_implied
+                edge_multiplier = get_edge_multiplier(market_key)
+                if edge > min_edge * edge_multiplier:
+                    edge = min(edge, 0.08)
+                    # Scale confidence differently for sharp-line picks (smaller edges are normal)
+                    # 1% edge → 55, 2% → 65, 4%+ → 80
+                    base_conf = int(edge * 1500 + 40)
+                    confidence = min(80, max(52, base_conf))
+                    if min_edge > 0 and confidence < 55:
+                        continue
+                    # Fixed unit sizing for sharp-line picks — edge is real but small
+                    units = round(min(0.5, max(0.05, edge * 15)), 2)
+                    team_point = next(
+                        (o.get("point") for o in fd_market.get("outcomes", []) if o["name"] == team),
+                        None
+                    )
+                    candidates.append({
+                        "sport": sport,
+                        "home": home,
+                        "away": away,
+                        "bet": _format_bet_label(team, market_key, team_point),
+                        "market": market_key,
+                        "odds": fd_price,
+                        "edge": edge,
+                        "confidence": confidence,
+                        "units": units,
+                        "game_mode": game_mode,
+                        "time_label": time_label,
+                        "point": team_point,
+                        "commence_time": game.get("commence_time", ""),
+                        "model_prob": round(sharp_prob, 4),
+                        "implied_prob": round(fd_implied, 4),
+                        "ev": expected_value(sharp_prob, fd_price),
+                        "best_book": "FanDuel",
+                    })
+                continue  # skip normal blending path for NCAAB
 
             # Blend model with sharp line probability
             model_weight = get_model_weight(market_key)
@@ -152,11 +193,16 @@ def analyze_team_markets_only(sport: str, game: dict, min_edge: float = 0.025) -
                 if min_edge > 0 and units < 0.15:
                     continue
 
+                # Get the point for THIS specific outcome, not always index 0
+                team_point = next(
+                    (o.get("point") for o in fd_market.get("outcomes", []) if o["name"] == team),
+                    None
+                )
                 candidates.append({
                     "sport": sport,
                     "home": home,
                     "away": away,
-                    "bet": _format_bet_label(team, market_key, fd_market.get("outcomes", [{}])[0].get("point")),
+                    "bet": _format_bet_label(team, market_key, team_point),
                     "market": market_key,
                     "odds": fd_price,
                     "edge": edge,
@@ -164,7 +210,7 @@ def analyze_team_markets_only(sport: str, game: dict, min_edge: float = 0.025) -
                     "units": units,
                     "game_mode": game_mode,
                     "time_label": time_label,
-                    "point": fd_market.get("outcomes", [{}])[0].get("point"),
+                    "point": team_point,
                     "commence_time": game.get("commence_time", ""),
                     "model_prob": round(blended_prob, 4),
                     "implied_prob": round(american_to_implied(fd_price), 4),
@@ -215,6 +261,7 @@ def _get_pregame_model_prob(sport: str, game: dict, team: str, market_key: str, 
             "NHL": 0.415,    # ~2.4 goals = 100% favorite in NHL
             "MLB": 0.35,     # ~2.9 runs = 100% favorite in MLB
             "NFL": 0.055,    # ~18 pts = heavy favorite in NFL
+            "NCAAB": 0.055,  # similar to NFL scale for college basketball
         }.get(sport, 0.0435)
 
         # Projected margin (positive = home favored)
@@ -233,6 +280,7 @@ def _get_pregame_model_prob(sport: str, game: dict, team: str, market_key: str, 
             "NHL": 1.5,
             "MLB": 1.8,
             "NFL": model_total * 0.12,
+            "NCAAB": model_total * 0.13,
         }.get(sport, model_total * 0.12 if model_total else 5.0)
 
         # P(team covers spread)
